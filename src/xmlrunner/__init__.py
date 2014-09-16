@@ -127,8 +127,9 @@ class _XMLTestResult(_TextTestResult):
     Used by XMLTestRunner.
     """
     def __init__(self, stream=sys.stderr, descriptions=1, verbosity=1,
-                 elapsed_times=True, properties=None):
+                 elapsed_times=True, properties=None, log=None):
         _TextTestResult.__init__(self, stream, descriptions, verbosity)
+        self.log = log
         self.successes = []
         self.callback = None
         self.elapsed_times = elapsed_times
@@ -195,6 +196,8 @@ class _XMLTestResult(_TextTestResult):
         """
         Called when a test method fails.
         """
+        if self.log is not None:
+            self.log.exception(err)
         testinfo = _TestInfo(self, test, _TestInfo.FAILURE, err)
         self.failures.append((
             testinfo,
@@ -206,6 +209,8 @@ class _XMLTestResult(_TextTestResult):
         """
         Called when a test method raises an error.
         """
+        if self.log is not None:
+            self.log.exception(err)
         testinfo = _TestInfo(self, test, _TestInfo.ERROR, err)
         self.errors.append((
             testinfo,
@@ -404,9 +409,10 @@ class XMLTestRunner(TextTestRunner):
     """
     def __init__(self, output='.', outsuffix=None, stream=sys.stderr,
                  descriptions=True, verbosity=1, elapsed_times=True,
-                 failfast=False, encoding=None):
+                 failfast=False, encoding=None, log=None):
         TextTestRunner.__init__(self, stream, descriptions, verbosity,
                                 failfast=failfast)
+        self.log = log
         self.verbosity = verbosity
         self.output = output
         self.encoding = encoding
@@ -422,7 +428,8 @@ class XMLTestRunner(TextTestRunner):
         information about the executed tests.
         """
         return _XMLTestResult(
-            self.stream, self.descriptions, self.verbosity, self.elapsed_times
+            self.stream, self.descriptions, self.verbosity, self.elapsed_times,
+            log=self.log
         )
 
     def _patch_standard_output(self):
@@ -444,6 +451,7 @@ class XMLTestRunner(TextTestRunner):
         """
         Runs the given test case or test suite.
         """
+        self.log.error("In run called...")
         try:
             # Prepare the test execution
             self._patch_standard_output()
