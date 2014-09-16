@@ -96,6 +96,19 @@ class _TestInfo(object):
 
         self.test_name = testcase_name(test_method)
         self.test_id = test_method.id()
+        self.details_path = self._exception_details_path(err)
+
+    def _exception_details_path(self, err):
+        """Return file name with details about exception err"""
+        if isinstance(err, basestring) or err is None:
+            return ""
+        try:
+            from diagnostics.storages import FileStorage
+            from diagnostics.models import ExceptionInfo
+            result = FileStorage(".")._build_path_to_file(ExceptionInfo(err))
+        except ImportError:
+            result = ""
+        return result
 
     def id(self):
         return self.test_id
@@ -357,6 +370,7 @@ class _XMLTestResult(_TextTestResult):
             if test_result.outcome != _TestInfo.SKIP:
                 failure.setAttribute('type', test_result.err[0].__name__)
                 failure.setAttribute('message', to_unicode(test_result.err[1]))
+                failure.setAttribute('details', test_result.details_path)
                 error_info = to_unicode(test_result.get_error_info())
                 _XMLTestResult._createCDATAsections(xml_document, failure, error_info)
             else:
@@ -451,7 +465,6 @@ class XMLTestRunner(TextTestRunner):
         """
         Runs the given test case or test suite.
         """
-        self.log.error("In run called...")
         try:
             # Prepare the test execution
             self._patch_standard_output()
