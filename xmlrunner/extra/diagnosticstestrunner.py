@@ -20,7 +20,7 @@ class DiagnosticsTestInfo(_TestInfo):
         """Return file name with details about exception err"""
         if isinstance(err, basestring) or err is None:
             return ""
-        return exception_hook.storage._build_path_to_file(ExceptionInfo(err))
+        return FileStorage(".")._build_path_to_file(ExceptionInfo(err))
 
     def get_failure_attributes(self, *args, **kwargs):
         res = super(DiagnosticsTestInfo, self).get_failure_attributes(*args, **kwargs)
