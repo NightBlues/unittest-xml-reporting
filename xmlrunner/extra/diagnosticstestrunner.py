@@ -1,5 +1,7 @@
 """Integartion with diagnostics module."""
 
+import six
+
 from diagnostics import exception_hook, FileStorage, ExceptionInfo
 
 from xmlrunner.result import _TestInfo
@@ -13,7 +15,7 @@ class DiagnosticsTestInfo(_TestInfo):
         super(DiagnosticsTestInfo, self).__init__(
             test_result, test_method, outcome=outcome, err=err, subTest=subTest)
         self._details_path = self._exception_details_path(err)
-        if err:
+        if err and not isinstance(err, six.string_types):
             exception_hook(*err)
 
     def _exception_details_path(self, err):
